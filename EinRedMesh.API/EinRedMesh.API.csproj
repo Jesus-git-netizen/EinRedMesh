@@ -22,4 +22,8 @@
     <ProjectReference Include="..\EinRedMesh.Data\EinRedMesh.Data.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
+
 </Project>

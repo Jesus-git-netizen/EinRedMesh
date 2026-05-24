@@ -1,3 +1,4 @@
+using EinRedMesh.Data.AutoMapper;
 using EinRedMesh.Data.DataContext;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,6 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<EinDataContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Base")));
 
 // Add services to the container.
+builder.Services.AddAutoMapper(cfg => cfg.AddProfile<AutoMapperProfile>());
+
 
 builder.Services.AddSwaggerGen();
 

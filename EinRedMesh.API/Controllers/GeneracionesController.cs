@@ -1,9 +1,11 @@
-﻿using Ein.Entidades;
+﻿using AutoMapper;
+using Ein.Dtos;
+using Ein.Entidades;
+using EinRedMesh.API.Models;
 using EinRedMesh.Data.DataContext;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace EinRedMesh.API.Controllers
 {
@@ -12,51 +14,135 @@ namespace EinRedMesh.API.Controllers
     public class GeneracionesController : ControllerBase
     {
         private readonly EinDataContext _context;
-        public GeneracionesController(EinDataContext newobj)
+        private readonly IMapper _mapper;
+        public GeneracionesController(EinDataContext context, IMapper mapper)
         {
-            _context = newobj;
+            _context = context;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public async Task<ActionResult<RespuestaModel>> Get()
         {
-            var generaciones = _context.Generacion.ToList();
-            return Ok(generaciones);
+
+            try
+            {
+                var lista = await _context.Generacion.Where(x=>x.EstaActivo==true)
+                    .Select(x => _mapper.Map<GeneracionGetDto>(x))
+                    .ToListAsync();
+
+                if (lista.Count == 0)
+                    return new RespuestaModel(StatusCodes.Status204NoContent, "No existe contenido en las generaciones");
+
+                return new RespuestaModel(StatusCodes.Status200OK,"Se ejecuto correctamente", lista);
+
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<RespuestaModel>> GetById(int id)
+        {
+
+            try
+            {
+                var generacion = await _context.Generacion.Where(x=> x.EstaActivo==true && x.Id==id).FirstOrDefaultAsync();
+                if (generacion == null)
+                    return new RespuestaModel(StatusCodes.Status204NoContent,"No existe contenido");
+
+                var obj = _mapper.Map<GeneracionGetDto>(generacion);
+                return new RespuestaModel(StatusCodes.Status200OK, "Se ejecuto correctamente", obj);
+            }
+            catch (Exception ex)
+            {
+
+                return new RespuestaModel(StatusCodes.Status400BadRequest, ex.Message);
+            }
 
         }
+
+
+
 
         [HttpPost]
-        public IActionResult Post([FromBody] GeneracionEntity newobj)
+        public async Task <ActionResult<RespuestaModel>> Post(int id, GeneracionSetDto newobj)
         {
-            _context.Generacion.Add(newobj);
-            _context.SaveChanges();
-            return CreatedAtAction(nameof(Get), newobj);
+            try
+            {
+
+                if (!ModelState.IsValid)
+                    return new RespuestaModel(StatusCodes.Status400BadRequest,"Modelo invalido");
+                var generacion = await _context.Generacion.Where(x => x.EstaActivo && x.Id == id).FirstOrDefaultAsync();
+
+                if (generacion == null)
+                    return NotFound();
+
+
+                var obj = _mapper.Map<GeneracionEntity>(newobj);
+                await _context.Generacion.AddAsync(obj);
+                await _context.SaveChangesAsync();
+                return new RespuestaModel(200, "Se ejecuto correctamente", obj);
+
+            }
+            catch (Exception ex)
+            {
+
+                return new RespuestaModel(400, ex.Message);
+            }
+
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        [HttpDelete]
+        public async Task<ActionResult<RespuestaModel>> Delete(int id)
         {
-            var generacion = _context.Generacion.Find(id);
-            _context.Generacion.Remove(generacion);
-            _context.SaveChanges();
-            return Ok("Se elimino correctamente");
+
+            try
+            {
+                var generacion = await _context.Generacion.Where(x => x.EstaActivo && x.Id == id).FirstOrDefaultAsync();
+
+                if (generacion == null)
+                    return new RespuestaModel(StatusCodes.Status404NotFound, "No se encontraron");
+
+               // _context.Generacion.Remove(generacion);
+               generacion.EstaActivo = false;
+                _context.Generacion.Update(generacion);
+                await _context.SaveChangesAsync();
+                return new RespuestaModel(StatusCodes.Status200OK, "Se elimino correctamente",generacion);
+            }
+            catch (Exception ex)
+            {
+
+                return new RespuestaModel(400, ex.Message);
+            }
+
         }
 
         [HttpPut]
-        public IActionResult Put(int id, [FromBody] GeneracionEntity updateobj)
+        public async Task<ActionResult<RespuestaModel>> Put(int id, GeneracionSetDto updateobj)
         {
-            var generaciones = _context.Generacion.Find(id);
-            generaciones.Nombre = updateobj.Nombre;
-            generaciones.EstaActivo = updateobj.EstaActivo;
-            _context.Generacion.Update(generaciones);
-            _context.SaveChanges();
-            return Ok("Actulizado correctamente");
-        }
+            try
+            {
+                if (!ModelState.IsValid)
+                    return new RespuestaModel(StatusCodes.Status400BadRequest, "Modelo invalido");
 
-        [HttpPatch]
-        public IActionResult Patch(int id, [FromBody] GeneracionEntity updateobj)
-        {
-            return Ok("Actulizado correctamente");
+                var generacion =await  _context.Generacion.FindAsync(id);
+                if (generacion == null)
+                    return new RespuestaModel(StatusCodes.Status404NotFound, "No se encontraron");
+
+                generacion.Nombre = updateobj.Nombre;
+                _context.Generacion.Update(generacion);
+                await _context.SaveChangesAsync();
+                return new RespuestaModel(StatusCodes.Status200OK, "Actualizado correctamente", generacion);
+            }
+            catch (Exception ex)
+            {
+
+                return new RespuestaModel(400, ex.Message);
+            }
         }
     }
 }
