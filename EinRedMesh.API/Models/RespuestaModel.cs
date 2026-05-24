@@ -19,7 +19,7 @@
         public RespuestaModel(int statusCode, string Mensaje, object data=null)
         {
             HayError = statusCode<= 299 ? false : true;
-            Mensaje = mensaje;
+            this.Mensaje = Mensaje;
             Codigo = statusCode;
             Data = data;
             

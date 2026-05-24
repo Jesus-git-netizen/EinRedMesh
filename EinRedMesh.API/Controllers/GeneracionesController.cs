@@ -27,14 +27,19 @@ namespace EinRedMesh.API.Controllers
 
             try
             {
-                var lista = await _context.Generacion.Where(x=>x.EstaActivo==true)
-                    .Select(x => _mapper.Map<GeneracionGetDto>(x))
-                    .ToListAsync();
+                var lista = await _context.Generacion
+    .Where(x => x.EstaActivo == true)
+    .ToListAsync(); // ← primero trae los datos
 
-                if (lista.Count == 0)
-                    return new RespuestaModel(StatusCodes.Status204NoContent, "No existe contenido en las generaciones");
+                var listaDto = lista
+                    .Select(x => _mapper.Map<GeneracionGetDto>(x)) // ← luego mapea
+                    .ToList();
 
-                return new RespuestaModel(StatusCodes.Status200OK,"Se ejecuto correctamente", lista);
+                if (listaDto.Count == 0)
+                    return new RespuestaModel(StatusCodes.Status204NoContent, "No hay datos");
+
+                return new RespuestaModel(StatusCodes.Status200OK,
+                    "Se ejecutó correctamente", listaDto);
 
             }
             catch (Exception ex)

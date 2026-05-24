@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Ein.Dtos;
 using Ein.Entidades;
+using EinRedMesh.API.Models;
 using EinRedMesh.Data.DataContext;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -50,6 +51,8 @@ namespace EinRedMesh.API.Controllers
                 var obj = _mapper.Map<GrupoEntity>(newobj);
                 _context.Grupo.Add(obj);
                 _context.SaveChanges();
+                return Ok(new RespuestaModel(StatusCodes.Status200OK, "Grupo creado correctamente", obj));
+
 
             }
             catch (Exception ex)

@@ -8,6 +8,8 @@ namespace EinRedMesh.Core.Alumno
     public class AlumnoSetDto
     {
         [Required] public int IdGeneracion { get; set; }
+        [Required]
+        [StringLength(30)] public string Nombre { get; set; }
 
     }
 
