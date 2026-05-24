@@ -23,6 +23,8 @@ namespace Ein.Entidades
         [Required] public int IdGrupo { get; set; }
         [Required] public bool EstaActivo { get; set; }
 
-        [ForeignKey("IdGrupo")]public virtual required GrupoEntity Grupo { get; set; }
+        [ForeignKey("IdGrupo")] public virtual required GrupoEntity Grupo { get; set; }
+        [ForeignKey("IdGeneracion")] public virtual GeneracionEntity Generacion { get; set;}
+
     }
 }
