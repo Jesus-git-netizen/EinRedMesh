@@ -81,10 +81,7 @@ namespace EinRedMesh.API.Controllers
 
                 if (!ModelState.IsValid)
                     return new RespuestaModel(StatusCodes.Status400BadRequest,"Modelo invalido");
-                var generacion = await _context.Generacion.Where(x => x.EstaActivo && x.Id == id).FirstOrDefaultAsync();
 
-                if (generacion == null)
-                    return NotFound();
 
 
                 var obj = _mapper.Map<GeneracionEntity>(newobj);
